@@ -1,12 +1,15 @@
 "use client"
 import Link from 'next/link'
-import { ArrowLeft, Plus, Shield, Loader2, CalendarClock } from 'lucide-react'
+import { useClientTranslator } from '@/lib/i18n/client'
+import { ArrowLeft, Plus, Shield, Loader2, CalendarClock, ShieldCheck } from 'lucide-react'
 import { ActionState } from '@/lib/auth/middleware';
 import { useFormAction } from '@/lib/hooks/useFormAction';
 import { getPolicyPaymentPresentation } from '@/lib/ui/status-semantics';
 import NewPolicyForm from '@/components/forms/NewPolicyForm';
 
 export default function Insurance() {
+  const { t } = useClientTranslator();
+  
   type AddInsuranceResponse = ActionState & { 
     policyName?: string; 
     coverageAmount?: number; 
@@ -26,7 +29,7 @@ export default function Insurance() {
               <Link href="/" className="text-gray-600 hover:text-gray-900">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Micro-Insurance</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t("insurance.page_title")}</h1>
             </div>
             <div className="flex flex-col items-end">
               <button
@@ -34,9 +37,9 @@ export default function Insurance() {
                 disabled
               >
                 <Plus className="w-5 h-5" />
-                <span>New Policy</span>
+                <span>{t("insurance.new_policy")}</span>
               </button>
-              <p className="mt-1 text-sm text-gray-500">Policy creation will be available once contract integration is live.</p>
+              <p className="mt-1 text-sm text-gray-500">{t("insurance.new_policy_disabled_note")}</p>
             </div>
           </div>
         </div>
@@ -48,7 +51,7 @@ export default function Insurance() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Active Policies */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Active Policies</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("insurance.active_policies")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <PolicyCard
               name="Health Insurance"
@@ -57,6 +60,7 @@ export default function Insurance() {
               coverageAmount={1000}
               nextPayment="2024-02-01"
               active={true}
+              t={t}
             />
             <PolicyCard
               name="Emergency Coverage"
@@ -65,6 +69,7 @@ export default function Insurance() {
               coverageAmount={500}
               nextPayment="2024-02-05"
               active={true}
+              t={t}
             />
           </div>
         </div>
@@ -73,20 +78,24 @@ export default function Insurance() {
   );
 }
 
+// ─── PolicyCard (original) ─────────────────────────────────────────────────────
+
 function PolicyCard({ 
   name, 
   coverageType, 
   monthlyPremium, 
   coverageAmount, 
   nextPayment, 
-  active 
+  active,
+  t
 }: { 
   name: string; 
   coverageType: string; 
   monthlyPremium: number; 
   coverageAmount: number; 
   nextPayment: string;
-  active: boolean; 
+  active: boolean;
+  t: (key: string) => string;
 }) {
   return (
     <div
@@ -99,15 +108,15 @@ function PolicyCard({
         <h3 className="font-semibold text-white">{t("insurance.status_success_title")}</h3>
       </div>
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <SuccessBadge label={t("insurance.success_badge_name")} value={state.policyName} />
-        <SuccessBadge label={t("insurance.success_badge_type")} value={state.coverageType} />
+        <SuccessBadge label={t("insurance.success_badge_name")} value={name} />
+        <SuccessBadge label={t("insurance.success_badge_type")} value={coverageType} />
         <SuccessBadge
           label={t("insurance.success_badge_premium")}
-          value={state.monthlyPremium !== undefined ? `$${state.monthlyPremium}/mo` : undefined}
+          value={monthlyPremium !== undefined ? `$${monthlyPremium}/mo` : undefined}
         />
         <SuccessBadge
           label={t("insurance.success_badge_coverage")}
-          value={state.coverageAmount !== undefined ? `$${state.coverageAmount}` : undefined}
+          value={coverageAmount !== undefined ? `$${coverageAmount}` : undefined}
         />
       </dl>
     </div>
@@ -130,13 +139,20 @@ function SuccessBadge({
   );
 }
 
-// ─── PolicyCard ────────────────────────────────────────────────────────────────
+// ─── PolicyCard (refactored) ──────────────────────────────────────────────────
 
-function PolicyCard({
+function PolicyCardRefactored({
   policy,
   t,
 }: {
-  policy: Policy;
+  policy: {
+    name: string;
+    coverageType: string;
+    monthlyPremium: number;
+    coverageAmount: number;
+    nextPaymentDate: string;
+    active: boolean;
+  };
   t: (key: string) => string;
 }) {
   const paymentStatus = getPolicyPaymentPresentation(
