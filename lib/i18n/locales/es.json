@@ -1,4 +1,11 @@
 {
+  "rootError": {
+    "eyebrow": "Error de la aplicacion",
+    "title": "Algo salio mal",
+    "description": "Encontramos un problema inesperado, pero tu sesion sigue segura. Intenta recargar esta vista o vuelve al inicio.",
+    "tryAgain": "Intentar de nuevo",
+    "home": "Ir al inicio"
+  },
   "insurance": {
     "page_title": "Microseguro",
     "page_subtitle": "Administra tus pólizas de cobertura activas",

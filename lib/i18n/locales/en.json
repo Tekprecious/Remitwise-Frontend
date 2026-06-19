@@ -1,4 +1,11 @@
 {
+  "rootError": {
+    "eyebrow": "Application error",
+    "title": "Something went wrong",
+    "description": "We hit an unexpected problem, but your session is still safe. Try reloading this view or return home.",
+    "tryAgain": "Try again",
+    "home": "Go home"
+  },
   "insurance": {
     "page_title": "Micro-Insurance",
     "page_subtitle": "Manage your active coverage policies",
