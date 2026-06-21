@@ -144,8 +144,9 @@ function Toggle({
   onChange?: (next: boolean) => void;
 }) {
   const { t } = useClientTranslator();
-  const [on, setOn] = useState(defaultChecked ?? false);
-  
+  const [uncontrolledOn, setUncontrolledOn] = useState(defaultChecked ?? false);
+  const on = checked ?? uncontrolledOn;
+
   return (
     <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-50 dark:border-gray-800/60 last:border-0">
       <div className="min-w-0">
@@ -205,13 +206,11 @@ function SaveButton({ labelKey = "settings.save_changes" }: { labelKey?: string 
   return (
     <div className="flex justify-end px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
       <button
-        onClick={onSave}
-        disabled={
-          isDisabled || saveState === "saving" || saveState === "loading"
-        }
+        onClick={handleClick}
+        disabled={state === "saving"}
         className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 transition-colors min-w-[130px] justify-center"
       >
-        {saveState === "saving" || saveState === "loading" ? (
+        {state === "saving" ? (
           <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               className="opacity-25"
@@ -227,7 +226,7 @@ function SaveButton({ labelKey = "settings.save_changes" }: { labelKey?: string 
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-        ) : saveState === "saved" ? (
+        ) : state === "saved" ? (
           <>
             <Check className="h-4 w-4" />
             {label}
@@ -826,53 +825,6 @@ function PreferencesSection() {
 export default function SettingsPage() {
   const { t } = useClientTranslator();
   const [active, setActive] = useState<SectionId>("profile");
-  const t = useClientTranslator();
-  const { toast } = useToast();
-
-  const { preferences, isLoading, saveState, error, updatePreferences, flush } =
-    useUserPreferences();
-
-  useEffect(() => {
-    if (!preferences) return;
-    if (saveState === "saving") {
-      const id = toast({
-        variant: "info",
-        title: t.t("settings.save.saving", "Saving…"),
-        duration: 1500,
-      });
-      // auto-dismiss is handled by duration
-      void id;
-    } else if (saveState === "saved") {
-      toast({
-        variant: "success",
-        title: t.t("settings.save.saved", "Saved"),
-        duration: 2000,
-      });
-    } else if (saveState === "error") {
-      toast({
-        variant: "error",
-        title: t.t("settings.save.error", "Failed to save preferences"),
-        description: error ?? undefined,
-        duration: 5000,
-      });
-    }
-  }, [error, preferences, saveState, t, toast]);
-
-  const currency = preferences?.currency;
-  const timezone = preferences?.timezone;
-  const notificationsEnabled = preferences?.notifications_enabled;
-
-  const onToggleNotifications = (next: boolean) => {
-    updatePreferences({ notifications_enabled: next });
-  };
-
-  const onCurrencyChange = (next: string) => {
-    updatePreferences({ currency: next });
-  };
-
-  const onTimezoneChange = (next: string) => {
-    updatePreferences({ timezone: next });
-  };
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // ── Scroll-spy: update active nav item based on visible section ────────────
@@ -977,24 +929,11 @@ export default function SettingsPage() {
         {/* ── Main content stack ── */}
         <main className="space-y-6" aria-label={t("settings.content_aria_label")}>
           <ProfileSection />
-          <NotificationsSection
-            preferences={preferences}
-            onToggle={onToggleNotifications}
-            currency={currency}
-            onCurrencyChange={onCurrencyChange}
-            timezone={timezone}
-            onTimezoneChange={onTimezoneChange}
-          />
+          <NotificationsSection />
           <SecuritySection />
-          <WalletSection
-            currency={currency}
-            onCurrencyChange={onCurrencyChange}
-          />
+          <WalletSection />
           <FamilySection />
-          <PreferencesSection
-            timezone={timezone}
-            onTimezoneChange={onTimezoneChange}
-          />
+          <PreferencesSection />
         </main>
       </div>
     </div>

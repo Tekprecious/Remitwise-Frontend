@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 const STELLAR_ADDRESS_REGEX = /G[A-Z2-7]{55}/g;
 const AMOUNT_REGEX = /\b\d+(\.\d+)?\s*(XLM|USDC|USD)\b/gi;
 
-function scrubStellarPII(event: Sentry.Event): Sentry.Event {
+function scrubStellarPII<T extends Sentry.Event>(event: T): T {
   const str = JSON.stringify(event);
   const scrubbed = str
     .replace(STELLAR_ADDRESS_REGEX, "[STELLAR_ADDRESS]")

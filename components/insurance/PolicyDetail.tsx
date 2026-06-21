@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { type Policy } from "@/lib/contracts/insurance";
 import { getPolicyPaymentPresentation } from "@/lib/ui/status-semantics";
-import { usePolicyActions } from "@/hooks/usePolicyActions";
+import { usePolicyActions } from "@/lib/hooks/usePolicyActions";
 import AsyncSubmissionStatus from "@/components/AsyncSubmissionStatus";
 
 /**

@@ -40,6 +40,12 @@ export interface AnchorRatesCacheData {
   timestamp: number;
 }
 
+/**
+ * Time-to-live for cached anchor rates, in milliseconds (5 minutes).
+ * The cache is fresh while `(now - timestamp) < RATES_CACHE_TTL_MS`.
+ */
+export const RATES_CACHE_TTL_MS = 5 * 60 * 1000;
+
 const initialState: AnchorRatesCacheData = {
   rates: null,
   timestamp: 0,
@@ -71,6 +77,40 @@ export function getAnchorRatesCache(): AnchorRatesCacheData {
  */
 export function setAnchorRatesCache(rates: ExchangeRate[], timestamp: number): void {
   rateCache = { rates, timestamp };
+}
+
+/**
+ * Returns how long ago (ms) the cache was populated, or `null` if it has
+ * never been populated (`rates === null`).
+ *
+ * @param now - The reference epoch timestamp (ms). Defaults to `Date.now()`.
+ */
+export function getCacheAgeMs(now: number = Date.now()): number | null {
+  if (rateCache.rates === null) return null;
+  return now - rateCache.timestamp;
+}
+
+/**
+ * Returns `true` when the cache holds rates that are still within the TTL
+ * window. An empty cache (`rates === null`) is never fresh.
+ *
+ * @param now - The reference epoch timestamp (ms). Defaults to `Date.now()`.
+ */
+export function isCacheFresh(now: number = Date.now()): boolean {
+  const age = getCacheAgeMs(now);
+  return age !== null && age < RATES_CACHE_TTL_MS;
+}
+
+/**
+ * Returns `true` when the cache holds rates whose age has reached or exceeded
+ * the TTL. An empty cache (`rates === null`) is **not** stale — there is no
+ * data to be stale — so this returns `false` in that case.
+ *
+ * @param now - The reference epoch timestamp (ms). Defaults to `Date.now()`.
+ */
+export function isCacheStale(now: number = Date.now()): boolean {
+  const age = getCacheAgeMs(now);
+  return age !== null && age >= RATES_CACHE_TTL_MS;
 }
 
 /**

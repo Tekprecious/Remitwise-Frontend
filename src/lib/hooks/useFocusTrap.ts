@@ -99,7 +99,7 @@ export function useFocusTrap({
 
   // Handle overlay click
   const handleOverlayClick = useCallback(
-    (event: MouseEvent) => {
+    (event: MouseEvent | TouchEvent) => {
       const container = modalRef.current;
       if (!container) return;
 

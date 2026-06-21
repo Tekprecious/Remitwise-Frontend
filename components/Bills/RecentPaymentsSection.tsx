@@ -1,13 +1,11 @@
 "use client";
 
 import { BillCards } from "@/components/Bills/BillsCard";
+import { mockPaidBills } from "@/lib/mockdata/bills";
 import { useDensity } from "@/lib/context/DensityContext";
-import { Bill } from '@/lib/contracts/bill-payments';
-import { WidgetEmptyState } from '@/components/ui/WidgetStates';
 
-export default function RecentPaymentsSection({ bills }: { bills: Bill[] }) {
+export default function RecentPaymentsSection() {
   const { density } = useDensity();
-  const paidBills = bills.filter((bill) => bill.status === 'paid');
 
   return (
     <section
@@ -21,22 +19,18 @@ export default function RecentPaymentsSection({ bills }: { bills: Bill[] }) {
         </p>
       </div>
 
-      {paidBills.length > 0 ? (
-        <div
-          role="list"
-          className={
-            density === "compact"
-              ? "flex flex-col gap-2"
-              : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          }
-        >
-          {paidBills.map((bill) => (
-            <BillCards key={bill.id} bill={bill} density={density} />
-          ))}
-        </div>
-      ) : (
-        <WidgetEmptyState title="No recent payments" message="Paid bills will appear here once processed." />
-      )}
+      <div
+        role="list"
+        className={
+          density === "compact"
+            ? "flex flex-col gap-2"
+            : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        }
+      >
+        {mockPaidBills.map((bill) => (
+          <BillCards key={bill.id} bill={bill} density={density} />
+        ))}
+      </div>
     </section>
   );
 }

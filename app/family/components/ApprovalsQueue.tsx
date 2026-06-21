@@ -121,7 +121,8 @@ export interface ApprovalsQueueProps {
 
 export default function ApprovalsQueue({ hook }: ApprovalsQueueProps) {
   const { t } = useClientTranslator();
-  const { address, connected, signTransaction } = useWallet();
+  const { account, isConnected: connected, signTransaction } = useWallet();
+  const address = account?.address ?? "";
   const internal = useApprovalsQueue();
   const { queue, signItem, expireStale } = hook ?? internal;
 

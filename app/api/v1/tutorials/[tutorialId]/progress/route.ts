@@ -1,27 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "@/lib/auth/session";
+import { requireAuth } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
 interface TutorialProgress {
   chapters: Record<string, { checkpoints: boolean[] }>;
 }
 
+async function getUserId(): Promise<string | null> {
+  const { address } = await requireAuth();
+  const user = await prisma.user.findUnique({
+    where: { stellar_address: address },
+  });
+  return user?.id ?? null;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tutorialId: string } }
+  { params }: { params: Promise<{ tutorialId: string }> }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.id) {
+    const userId = await getUserId();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { tutorialId } = params;
+    const { tutorialId } = await params;
 
     const progress = await prisma.tutorialProgress.findUnique({
       where: {
         userId_tutorialId: {
-          userId: session.user.id,
+          userId,
           tutorialId,
         },
       },
@@ -34,6 +42,7 @@ export async function GET(
     const data = JSON.parse(progress.data) as TutorialProgress;
     return NextResponse.json(data);
   } catch (error) {
+    if (error instanceof Response) return error;
     console.error("Error fetching tutorial progress:", error);
     return NextResponse.json(
       { error: "Failed to fetch tutorial progress" },
@@ -44,15 +53,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { tutorialId: string } }
+  { params }: { params: Promise<{ tutorialId: string }> }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.id) {
+    const userId = await getUserId();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { tutorialId } = params;
+    const { tutorialId } = await params;
     const body: TutorialProgress = await request.json();
 
     // Validate the progress data structure
@@ -66,12 +75,12 @@ export async function PUT(
     const progress = await prisma.tutorialProgress.upsert({
       where: {
         userId_tutorialId: {
-          userId: session.user.id,
+          userId,
           tutorialId,
         },
       },
       create: {
-        userId: session.user.id,
+        userId,
         tutorialId,
         data: JSON.stringify(body),
       },
@@ -83,6 +92,7 @@ export async function PUT(
     const data = JSON.parse(progress.data) as TutorialProgress;
     return NextResponse.json(data);
   } catch (error) {
+    if (error instanceof Response) return error;
     console.error("Error saving tutorial progress:", error);
     return NextResponse.json(
       { error: "Failed to save tutorial progress" },

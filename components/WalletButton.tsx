@@ -14,7 +14,8 @@ const truncateAddress = (address: string) => {
 const WalletButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const { address, connected, connect, disconnect, network } = useWallet();
+  const { account, isConnected: connected, connect, disconnect, network } = useWallet();
+  const address = account?.address ?? '';
 
   const closeDropdown = () => {
     setIsOpen(false);

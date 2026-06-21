@@ -6,10 +6,26 @@ import TransactionHistoryItem from "@/components/Dashboard/TransactionHistoryIte
 import TransactionHistoryHeader from "./components/transaction-history-header";
 import TransactionHistorySearchInput from "./components/transaction-history-search-input";
 import Button from "./components/transaction-history-button";
-import { Download, FilterIcon, Loader2 } from "lucide-react";
-import { TransactionItem } from '@/lib/remittance/horizon';
-import { useClientTranslator } from '@/lib/i18n/client';
-import { apiClient } from '@/lib/client/apiClient';
+import WidgetEmptyState from "@/components/ui/WidgetEmptyState";
+import { TransactionItem } from "@/lib/remittance/horizon";
+import { useClientTranslator } from "@/lib/i18n/client";
+import { useDebounce } from "@/lib/hooks/useDebounce";
+import type { Transaction, TransactionStatus } from "@/components/Dashboard/TransactionHistoryItem";
+
+type Direction = "all" | "sent" | "received";
+
+type GroupKey = "today" | "yesterday" | "earlier";
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getGroupKey(date: Date, todayStart: Date, yesterdayStart: Date): GroupKey {
+  const d = startOfDay(date);
+  if (d.getTime() === todayStart.getTime()) return "today";
+  if (d.getTime() === yesterdayStart.getTime()) return "yesterday";
+  return "earlier";
+}
 
 const TransactionHistoryPage = () => {
   const { t } = useClientTranslator();
@@ -35,12 +51,23 @@ const TransactionHistoryPage = () => {
     return startOfDay(d);
   }, []);
 
-      const response = await apiClient.get(`/api/v1/remittance/history?${params}`);
-      if (!response) return; // Handled by session expiry flow
-
-      if (!response.ok) {
-        throw new Error(t('transactionHistory.alerts.fetchFailed'));
-      }
+  const groupLabels: Record<GroupKey, { label: string; helper: string }> = useMemo(
+    () => ({
+      today: {
+        label: t("transactionHistory.dateGroups.today"),
+        helper: t("transactionHistory.dateGroups.todayHelper"),
+      },
+      yesterday: {
+        label: t("transactionHistory.dateGroups.yesterday"),
+        helper: t("transactionHistory.dateGroups.yesterdayHelper"),
+      },
+      earlier: {
+        label: t("transactionHistory.dateGroups.earlier"),
+        helper: t("transactionHistory.dateGroups.earlierHelper"),
+      },
+    }),
+    [t]
+  );
 
   const fetchTransactions = useCallback(
     async (currentCursor?: string, reset = false) => {
@@ -91,15 +118,9 @@ const TransactionHistoryPage = () => {
         setInitialLoading(false);
         setLoadingMore(false);
       }
-      
-      setCursor(data.nextCursor);
-      setHasMore(!!data.nextCursor);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('transactionHistory.alerts.genericError'));
-    } finally {
-      setLoading(false);
-    }
-  }, [statusFilter, t]);
+    },
+    [statusFilter, t]
+  );
 
   useEffect(() => {
     fetchTransactions(undefined, true);
@@ -131,9 +152,10 @@ const TransactionHistoryPage = () => {
 
     return transactions.filter((tx) => {
       if (statusFilter !== "all") {
-        if (tx.status === "pending" && statusFilter !== "pending") return false;
-        if (tx.status === "completed" && statusFilter !== "completed") return false;
-        if (tx.status === "failed" && statusFilter !== "failed") return false;
+        // Horizon transactions are only ever "completed" or "failed";
+        // a "pending" filter therefore never matches any settled transaction.
+        if (statusFilter === "pending") return false;
+        if (tx.status !== statusFilter) return false;
       }
 
       if (directionFilter !== "all" && userAddress) {

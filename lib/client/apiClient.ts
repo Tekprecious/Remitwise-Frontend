@@ -25,6 +25,8 @@ import { sessionHandler } from './sessionHandler';
 export interface ApiClientOptions extends RequestInit {
   retries?: number;
   backoff?: number;
+  /** Internal flag used to ensure the 401 -> refresh -> retry happens only once. */
+  _isRetry?: boolean;
 }
 
 const DEFAULT_RETRIES = 3;

@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState } from "react";
 import { Copy, Check, Eye, Edit2, User, Send, ShieldCheck } from "lucide-react";
+import { useClientTranslator } from "@/lib/i18n/client";
 
 export type FamilyMemberRole = "Recipient" | "Sender" | "Admin";
 

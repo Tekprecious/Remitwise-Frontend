@@ -123,7 +123,7 @@ export default function EmergencyTransferPage() {
             {/* Step 1 */}
             <div className="relative z-10 flex flex-col items-center gap-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
-                step === "recipient" ? "bg-red-600 text-white" : step !== "recipient" ? "bg-red-900/40 text-red-500" : "bg-zinc-800 text-zinc-500"
+                step === "recipient" ? "bg-red-600 text-white" : "bg-red-900/40 text-red-500"
               } ${step !== "recipient" ? "ring-4 ring-black" : ""}`}>
                 1
               </div>

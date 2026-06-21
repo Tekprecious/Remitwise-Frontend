@@ -80,6 +80,7 @@ export default function SplitConfiguration() {
 	const [pending, setPending] = useState(false);
 	const [submissionError, setSubmissionError] = useState<string | undefined>();
 	const [submissionSuccess, setSubmissionSuccess] = useState<string | undefined>();
+	const [showHowItWorks, setShowHowItWorks] = useState(false);
 
 	const validationResult = useMemo(() => {
 		try {
@@ -236,7 +237,13 @@ export default function SplitConfiguration() {
 								errorTitle='Submission failed'
 							/>
 
-							<HowItWorks />
+							<button
+								type='button'
+								onClick={() => setShowHowItWorks(true)}
+								className='touch-target-wide w-full rounded-2xl border border-white/10 bg-[#161616] px-6 py-3.5 text-center text-sm 375:text-base font-semibold text-white transition hover:bg-[#202020] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#101010]'>
+								How it works
+							</button>
+							<HowItWorks isOpen={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
 
 							<div className='flex flex-col gap-3 375:gap-4 pt-2 sm:flex-row'>
 								<Link

@@ -1,14 +1,15 @@
+"use client";
+
 import React from 'react';
 import { BillCards } from './BillsCard';
+import { mockBills } from '@/lib/mockdata/bills';
 import { useDensity } from '@/lib/context/DensityContext';
-import { Bill } from '@/lib/contracts/bill-payments';
-import { WidgetEmptyState } from '@/components/ui/WidgetStates';
 
 export function UnpaidBillsSection() {
     const { density } = useDensity();
     const unpaidStatuses: Bill['status'][] = ['overdue', 'urgent', 'upcoming'];
 
-    const unpaidBills = bills.filter((bill) =>
+    const unpaidBills = mockBills.filter((bill) =>
         unpaidStatuses.includes(bill.status)
     );
     const recurringUnpaidCount = unpaidBills.filter((bill) => bill.isRecurring).length;
